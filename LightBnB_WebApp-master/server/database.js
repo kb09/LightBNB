@@ -1,3 +1,4 @@
+const { Pool } = require('pg');
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
 
@@ -8,6 +9,21 @@ const users = require('./json/users.json');
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
+
+ const pool = new Pool({
+  user: 'vagrant',
+  password: '123',
+  database: 'light_bnb'
+});
+
+const getAllProperties = function(options, limit = 10) {
+  return pool.query(`
+  SELECT * FROM properties
+  LIMIT $1
+  `, [limit])
+  .then(res => res.rows);
+};
+
 const getUserWithEmail = function(email) {
   let user;
   for (const userId in users) {
