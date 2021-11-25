@@ -139,3 +139,15 @@ INSERT INTO properties (
   '3', 
   '5'
   );
+
+-- property reviews
+-- Don't worry about adding long messages. Just use the word "messages".
+INSERT INTO property reviews (
+  guest_id, property_id, reservation_id, rating, message
+  );
+
+  VALUES 
+  ('2', '5', '10', '3', 'message'),
+  ('1', '4', '1', '4', 'message'),
+  ('8', '1', '2', '4', 'message'),
+  ('3', '8', '5', '4', 'message');
