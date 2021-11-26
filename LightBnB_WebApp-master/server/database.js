@@ -16,27 +16,48 @@ const users = require('./json/users.json');
   database: 'lightbnb'
 });
 
-const getAllProperties = function(options, limit = 10) {
-  return pool.query(`
-  SELECT * FROM properties
-  LIMIT $1
-  `, [limit])
-  .then(res => res.rows);
-};
+const getAllProperties = function (options, limit = 10) {
+  const queryParams = [];
+  
+  let queryString = `
+  SELECT properties.*, avg(property_reviews.rating) as average_rating
+  FROM properties
+  JOIN property_reviews ON properties.id = property_id
+  `;
+if(options.owner_id){//-->
+  queryParams.push(`${options.owner_id}`);
+  queryString += `WHERE owner_id =$${queryParams.length} `;
+}
+  if (options.city) {
+    queryParams.push(`%${options.city}%`);
+    queryString += `and city ILIKE $${queryParams.length} `;
+  }
+  if(options.minimum_price_per_night && options.maximum_price_per_night){ //-->
+    queryParams.push(`${options.minimum_price_per_night}`);
+    queryParams.push(`${options.maximum_price_per_night}`);
+    queryString += `and cost_per_night between $${queryParams.length-1}
+    and $${queryParams.length}`;
+  }
 
+  if (options.minimum_rating) {//-->
+    queryParams.push(`${options.minimum_rating}`);
+    queryString += `and rating >= $${queryParams.length} `;
+  }
+  queryParams.push(limit);
+  queryString += `
+  GROUP BY properties.id
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length};
+  `;
+  console.log(queryString, queryParams);
+
+  return pool.query(queryString, queryParams)
+  .then((res) => res.rows)
+    .catch((err) => {
+    console.log(err.message);
+  });
+ }
 exports.getAllProperties = getAllProperties;
-
-
-// const getAllProperties = (options, limit = 10) => {
-//   pool
-//     .query(`SELECT * FROM properties LIMIT $1`, [limit])
-//     .then((result) => {
-//       console.log(result.rows);
-//     })rs
-//     .catch((err) => {
-//       console.log(err.message);
-//     });
-// };
 
 
 // get user with email
