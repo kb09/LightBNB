@@ -24,7 +24,7 @@ const getAllProperties = function (options, limit = 10) {
   FROM properties
   JOIN property_reviews ON properties.id = property_id
   `;
-  if(options.owner_id){ //-->
+  if(options.owner_id){ 
     queryParams.push(options.owner_id);
     queryString += `AND properties.owner_id = $${queryParams.length} `;
   }
@@ -136,7 +136,7 @@ exports.addUser = addUser;
 exports.getAllReservations = getAllReservations;
 
 
-/// Properties
+// Properties
 
 /**
  * Get all properties.
