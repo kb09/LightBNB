@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
 
-/// Users
+// Users
 
 /**
  * Get a single user from the database given their email.
@@ -24,6 +24,7 @@ const getAllProperties = function (options, limit = 10) {
   FROM properties
   JOIN property_reviews ON properties.id = property_id
   `;
+  // if an owner_id is passed in
   if(options.owner_id){ 
     queryParams.push(options.owner_id);
     queryString += `AND properties.owner_id = $${queryParams.length} `;
@@ -33,12 +34,19 @@ const getAllProperties = function (options, limit = 10) {
     queryParams.push(`%${options.city}%`);
     queryString += `and city ILIKE $${queryParams.length} `;
   }
+  
+  //if a minimum_price_per_night and a maximum_price_per_night
+  //only return properties within that price range
+
   if(options.minimum_price_per_night && options.maximum_price_per_night){
     queryParams.push(Number(options.minimum_price_per_night) * 100);
     queryString += `AND properties.cost_per_night BETWEEN $${queryParams.length} `;
     queryParams.push(Number(options.maximum_price_per_night) * 100);
     queryString += `AND $${queryParams.length} `;
   }
+
+  //if a minimum_rating is passed in
+  //only return properties with a rating equal to or higher than that
 
   if(options.minimum_rating){
     queryParams.push(options.minimum_rating);
@@ -59,6 +67,10 @@ exports.getAllProperties = getAllProperties;
 
 
 // get user with email
+
+//takes email and return a promise
+//promise should resolve with the user that has that email address
+//or null if that user does not exist
 
 const getUserWithEmail = function(email) {
   return pool.query(`
@@ -82,6 +94,8 @@ exports.getUserWithEmail = getUserWithEmail;
 
 // get user with id 
 
+//same as getUserWithEmail but using id instead of email
+
 const getUserWithId = function(id) {
   return pool.query(`
     SELECT *
@@ -104,6 +118,10 @@ exports.getUserWithId = getUserWithId;
  */
 
 // add user 
+
+//takes a user with name, email, and password property
+//insert the new user into the database and return a promise that resolves with the new user object
+//contain the user's id after it's been added to the database
 
 const addUser =  function(user) {
   const {name, email, password} = user;
